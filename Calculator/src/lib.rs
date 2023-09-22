@@ -1,42 +1,115 @@
 use std::collections::HashMap;
 
-type CalculationHashTree = (HashMap<i32, HashMap<char, Operator>>, HashMap<char, Operator>);
-
+type CalculationHashTree = (HashMap<i32, OperatorCommands>, OperatorCommands);
+type OperatorCommands = HashMap<char, Operator>;
 struct OperationTracker {
-    x1: i32,
-    x2: i32,
+    leftStart: usize,
+    leftEnd: usize,
+    rightStart:usize,
+    rightEnd: usize,
     calculable: Option<Operator>,
 }
 
 
-pub fn calc(query: String) -> String {
+pub fn calc(query: &String) -> String {
     let (priorites, all_operation_characters) = BuildCalculationHashTree();
     let mut result: String = String::from("");
     let mut done = false;
 
-    let mut operationTracker = FindNextOperation(query);
+    for (priorityIndex, operatorCommands) in priorites {
 
-
-    while match operationTracker {
-        None => {false}
-        Some(_) => {true}
-    } {
-
-        for (x, y) in &priorites {
-
-        };
+        let operation = FindNextOperation(query, operatorCommands);
 
     }
+    
 
 
     return result;
 }
 
-fn FindNextOperation(query: String) -> Option<OperationTracker> {
-    for (index, char) in query.chars().enumerate() {}
+fn FindNextOperation(query: &String, operatorCommands: HashMap<char, Operator>) -> Option<OperationTracker> {
+
+    let mut operator: Option<Operator> = None;
+    let mut leftStartOfOperation: Option<usize> = None;
+    let mut leftEndOfOperation: Option<usize> = None;
+    let mut rightStartOfOperation: Option<usize> = None;
+    let mut rightEndOfOperation: Option<usize> = None;
 
 
-    return None;
+    let queryChars = query.as_bytes();
+    let queryEnumerator = queryChars.iter().enumerate();
+
+    for (index, u8char) in queryEnumerator {
+
+        let char = char::from(*u8char);
+
+        if(operatorCommands.contains_key(&char)) {
+            leftEndOfOperation = Option::from(index - 1);
+            rightStartOfOperation = Option::from(index + 1);
+            operator = Option::from(operatorCommands[&char]);
+
+            // backtrack over the query to find all numbers that need to be processed
+            let mut i = index;
+            while i >= 0 {
+                let innerChar: char = char::from(queryChars[i]);
+
+                if(!innerChar.is_numeric()) {
+                    leftStartOfOperation = Option::from(i+1);
+                    break;
+                }
+
+
+                if(i == 0) {
+                    leftStartOfOperation = Option::from(i);
+                    break;
+                }
+                i = i-1;
+            }
+
+            // move forward in the query to find all numbers that need to be processed
+            let mut i = index;
+            while i <= 0 {
+                let innerChar: char = char::from(queryChars[i]);
+
+                if(!innerChar.is_numeric()) {
+                    rightEndOfOperation = Option::from(i-1);
+                    break;
+                }
+
+
+                if(i == query.len()) {
+                    rightEndOfOperation = Option::from(i);
+                    break;
+                }
+                i = i+1;
+            }
+        }
+    }
+
+    if(leftStartOfOperation == None) {
+        return None;
+    }
+
+    if(leftEndOfOperation == None) {
+        return None;
+    }
+
+    if(rightStartOfOperation == None) {
+        return None;
+    }
+
+    if(rightEndOfOperation == None) {
+        return None;
+    }
+
+
+    return Option::from(OperationTracker {
+        leftStart: leftStartOfOperation.unwrap(),
+        leftEnd: leftEndOfOperation.unwrap(),
+        rightStart: rightStartOfOperation.unwrap(),
+        rightEnd: rightEndOfOperation.unwrap(),
+        calculable: operator,
+    });
 }
 
 fn BuildCalculationHashTree() -> CalculationHashTree {
