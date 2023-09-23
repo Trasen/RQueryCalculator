@@ -1,14 +1,14 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 mod CalculationTracker;
 
-type CalculationHashTree = (HashMap<i32, OperatorCommands>, OperatorCommands);
-type OperatorCommands = HashMap<char, Operator>;
+type CalculationHashTree = (BTreeMap<i32, OperatorCommands>, OperatorCommands);
+type OperatorCommands = HashMap<&'static str, Operator>;
 
 pub fn calc(query: &String) -> String {
     let (priorites, _all_operation_characters) = BuildCalculationHashTree();
 
-    let mut result: String = String::from(query);
+    let mut result: String = String::from(query).trim().parse().unwrap();
 
     for (_priorityIndex, operatorCommands) in priorites {
 
@@ -23,13 +23,13 @@ pub fn calc(query: &String) -> String {
             match operation {
                 Some(operationTracker) => {
 
-                    let leftRange = (operationTracker.leftStart .. operationTracker.leftEnd + 1);
-                    let rightRange = (operationTracker.rightStart .. operationTracker.rightEnd + 1);
+                    let leftRange = operationTracker.leftStart .. operationTracker.leftEnd + 1;
+                    let rightRange = operationTracker.rightStart .. operationTracker.rightEnd + 1;
 
-                    let leftNumbers = &result.get(leftRange).unwrap().parse::<i32>().unwrap();
-                    let rightNumbers = &result.get(rightRange).unwrap().parse::<i32>().unwrap();
+                    let leftNumbers = &result.get(leftRange).unwrap().parse::<u64>().unwrap();
+                    let rightNumbers = &result.get(rightRange).unwrap().parse::<u64>().unwrap();
 
-                    let finishedCalculation = (operationTracker.calculable.calculable)(Vec::from([*leftNumbers, *rightNumbers]), Option::from(query));
+                    let finishedCalculation = (operationTracker.calculable.calculable)(Vec::from([*leftNumbers, *rightNumbers]), Option::from(&result));
 
                     result.replace_range((operationTracker.leftStart .. operationTracker.rightEnd + 1), finishedCalculation.as_str());
 
@@ -45,7 +45,7 @@ pub fn calc(query: &String) -> String {
 }
 
 fn BuildCalculationHashTree() -> CalculationHashTree {
-    let mut priorites: HashMap<i32, HashMap<char, Operator>> = HashMap::new();
+    let mut priorites: BTreeMap<i32, HashMap<&str, Operator>> = BTreeMap::new();
     let mut operatorCharacters = HashMap::new();
 
     let commands: Vec<Operator> = Vec::from([Addition::new(), Subtraction::new(), Multiplication::new(), Division::new()]);
@@ -53,7 +53,7 @@ fn BuildCalculationHashTree() -> CalculationHashTree {
     for x in commands {
         let prio: i32 = x.priority;
         let priority = priorites.get_mut(&prio);
-        let char: char = x.char;
+        let char: &str = x.char;
 
         operatorCharacters.insert(char, x);
 
@@ -73,12 +73,12 @@ fn BuildCalculationHashTree() -> CalculationHashTree {
 }
 
 
-pub type Calculable = fn(values: Vec<i32>, query: Option<&String>) -> String;
+pub type Calculable = fn(values: Vec<u64>, query: Option<&String>) -> String;
 
 #[derive(Clone, Copy)]
 pub struct Operator {
     priority: i32,
-    char: char,
+    char: &'static str,
     pub calculable: Calculable,
 }
 
@@ -95,7 +95,7 @@ impl Addition {
     fn new() -> Operator {
         Operator {
             priority: 4,
-            char: '+',
+            char: "+",
             calculable: |values, _query| {
                 return (values.get(0).unwrap() + values.get(1).unwrap()).to_string();
             },
@@ -107,7 +107,7 @@ impl Subtraction {
     fn new() -> Operator {
         Operator {
             priority: 4,
-            char: '-',
+            char: "-",
             calculable: |values, query| {
                 return (values.get(0).unwrap() - values.get(1).unwrap()).to_string();
             },
@@ -119,7 +119,7 @@ impl Multiplication {
     fn new() -> Operator {
         Operator {
             priority: 2,
-            char: '*',
+            char: "*",
             calculable: |values, _query| {
                 return (values.get(0).unwrap() * values.get(1).unwrap()).to_string();
             },
@@ -131,7 +131,7 @@ impl Division {
     fn new() -> Operator {
         Operator {
             priority: 2,
-            char: '/',
+            char: "/",
             calculable: |values, _query| {
                 return (values.get(0).unwrap() / values.get(1).unwrap()).to_string();
             },

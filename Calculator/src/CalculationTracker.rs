@@ -1,21 +1,28 @@
 use std::collections::HashMap;
-use crate::{Addition, Operator, OperatorCommands, Subtraction};
+
+use crate::{Addition, Multiplication, Operator, OperatorCommands, Subtraction};
 
 pub fn FindNextOperation(mut query: &String, mut operatorCommands: &OperatorCommands) -> Option<OperationTracker> {
-
     let mut operator: Option<Operator> = None;
     let mut leftStartOfOperation: Option<usize> = None;
     let mut leftEndOfOperation: Option<usize> = None;
     let mut rightStartOfOperation: Option<usize> = None;
     let mut rightEndOfOperation: Option<usize> = None;
 
-    let queryChars = query.as_bytes();
-    let queryEnumerator = queryChars.iter().enumerate();
+    let mut index = 0;
+    let queryRef = query.as_str();
 
-    for (index, u8char) in queryEnumerator {
-        let char = char::from(*u8char);
+    while index <= query.len() {
+        let charOption = queryRef.get(index..index + 1);
 
-        if operatorCommands.contains_key(&char) {
+        if charOption.is_none() {
+            return None;
+        }
+
+        let char = charOption.unwrap();
+
+
+        if operatorCommands.contains_key(char) {
             leftEndOfOperation = Some(index - 1);
             rightStartOfOperation = Some(index + 1);
             operator = Some(operatorCommands[&char]);
@@ -23,14 +30,14 @@ pub fn FindNextOperation(mut query: &String, mut operatorCommands: &OperatorComm
             // backtrack over the query to find all numbers that need to be processed
             let mut i = index - 1;
             while i >= 0 {
-                let innerChar: char = char::from(queryChars[i]);
+                let innerChar = queryRef.get(i..i + 1).unwrap();
 
                 if i == 0 {
                     leftStartOfOperation = Some(i);
                     break;
                 }
 
-                if !innerChar.is_numeric() {
+                if !innerChar.chars().next().unwrap().is_numeric() {
                     leftStartOfOperation = Some(i);
                     break;
                 }
@@ -41,9 +48,9 @@ pub fn FindNextOperation(mut query: &String, mut operatorCommands: &OperatorComm
             // move forward in the query to find all numbers that need to be processed
             let mut u = index + 1;
             while u < query.len() {
-                let innerChar: char = char::from(queryChars[u]);
+                let innerChar = queryRef.get(u..u + 1).unwrap();
 
-                if !innerChar.is_numeric() {
+                if !innerChar.chars().next().unwrap().is_numeric() {
                     rightEndOfOperation = Some(u - 1);
                     u = u + 1;
                     break;
@@ -58,13 +65,14 @@ pub fn FindNextOperation(mut query: &String, mut operatorCommands: &OperatorComm
             }
             break;
         }
+        index = index + 1;
     }
 
     for x in Vec::from([leftStartOfOperation.is_none(), leftEndOfOperation.is_none(), rightStartOfOperation.is_none(), rightEndOfOperation.is_none(), operator.is_none()]) {
-            if x == true {
-                return None;
-            }
+        if x == true {
+            return None;
         }
+    }
 
     let result = Some(OperationTracker {
         leftStart: leftStartOfOperation.unwrap(),
@@ -80,14 +88,14 @@ pub fn FindNextOperation(mut query: &String, mut operatorCommands: &OperatorComm
 pub struct OperationTracker {
     pub leftStart: usize,
     pub leftEnd: usize,
-    pub rightStart:usize,
+    pub rightStart: usize,
     pub rightEnd: usize,
     pub calculable: Operator,
 }
 
 #[test]
 fn operationIsParsedProperly() {
-    let result = FindNextOperation(&String::from("1+1"), &HashMap::from([('+', Addition::new())]));
+    let result = FindNextOperation(&String::from("1+1"), &HashMap::from([("+", Addition::new())]));
     assert_eq!(result.is_none(), false);
 
 
@@ -101,13 +109,13 @@ fn operationIsParsedProperly() {
 
 #[test]
 fn queryHasNoCalculableValues() {
-    let result = FindNextOperation(&String::from("123123"), &HashMap::from([('+', Addition::new())]));
+    let result = FindNextOperation(&String::from("123123"), &HashMap::from([("+", Addition::new())]));
     assert_eq!(result.is_none(), true);
 }
 
 #[test]
 fn multipleOperationsInOneExpression() {
-    let result = FindNextOperation(&String::from("4+5-1"), &HashMap::from([('+', Addition::new()), ('-', Subtraction::new())]));
+    let result = FindNextOperation(&String::from("4+5-1"), &HashMap::from([("+", Addition::new()), ("-", Subtraction::new())]));
     assert_eq!(result.is_none(), false);
 
 
@@ -121,7 +129,7 @@ fn multipleOperationsInOneExpression() {
 
 #[test]
 fn multipleOperationsOrderForCommandsInitDoesNotMatter() {
-    let result = FindNextOperation(&String::from("4+5-1"), &HashMap::from([ ('-', Subtraction::new()), ('+', Addition::new())]));
+    let result = FindNextOperation(&String::from("4+5-1"), &HashMap::from([("-", Subtraction::new()), ("+", Addition::new())]));
     assert_eq!(result.is_none(), false);
 
 
@@ -135,7 +143,7 @@ fn multipleOperationsOrderForCommandsInitDoesNotMatter() {
 
 #[test]
 fn multipleOperationsOrderForCommandsInitDoesNotMatter2() {
-    let result = FindNextOperation(&String::from("9-1"), &HashMap::from([ ('-', Subtraction::new()), ('+', Addition::new())]));
+    let result = FindNextOperation(&String::from("9-1"), &HashMap::from([("-", Subtraction::new()), ("+", Addition::new())]));
     assert_eq!(result.is_none(), false);
 
 
@@ -145,4 +153,18 @@ fn multipleOperationsOrderForCommandsInitDoesNotMatter2() {
     assert_eq!(0, operationTracker.leftEnd);
     assert_eq!(2, operationTracker.rightStart);
     assert_eq!(2, operationTracker.rightEnd);
+}
+
+#[test]
+fn multiplePrioritiesShouldBeAllowed() {
+    let result = FindNextOperation(&String::from("4000*200+5-5"), &HashMap::from([("-", Subtraction::new()), ("+", Addition::new()), (("*"), Multiplication::new())]));
+    assert_eq!(result.is_none(), false);
+
+
+    let operationTracker = result.unwrap();
+
+    assert_eq!(0, operationTracker.leftStart);
+    assert_eq!(3, operationTracker.leftEnd);
+    assert_eq!(5, operationTracker.rightStart);
+    assert_eq!(7, operationTracker.rightEnd);
 }

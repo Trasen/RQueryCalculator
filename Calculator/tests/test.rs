@@ -24,3 +24,8 @@ fn division() {
 fn chainedCalculationsShouldBeSupported() {
     assert_eq!("8", calc(&String::from("4+5-1")));
 }
+
+#[test]
+fn multiplePriorityCalculationsShouldBeSupported() {
+    assert_eq!("800000", calc(&String::from("4000*200+5-5")));
+}
