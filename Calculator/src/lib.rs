@@ -8,25 +8,37 @@ type OperatorCommands = HashMap<char, Operator>;
 pub fn calc(query: &String) -> String {
     let (priorites, _all_operation_characters) = BuildCalculationHashTree();
 
-    let mut result: String = String::from("");
+    let mut result: String = String::from(query);
 
     for (_priorityIndex, operatorCommands) in priorites {
 
-        let operation = CalculationTracker::FindNextOperation(query, operatorCommands);
+        let test = &operatorCommands;
 
-        match operation {
-            Some(operationTracker) => {
+        let mut priorityDone = false;
 
-                let leftNumbers = &query.get(operationTracker.leftStart .. operationTracker.leftEnd + 1).unwrap().parse::<i32>().unwrap();
-                let rightNumbers = &query.get(operationTracker.rightStart .. operationTracker.rightEnd + 1).unwrap().parse::<i32>().unwrap();
+        while !priorityDone {
+
+            let operation = CalculationTracker::FindNextOperation(&result, test);
+
+            match operation {
+                Some(operationTracker) => {
+
+                    let leftRange = (operationTracker.leftStart .. operationTracker.leftEnd + 1);
+                    let rightRange = (operationTracker.rightStart .. operationTracker.rightEnd + 1);
+
+                    let leftNumbers = &result.get(leftRange).unwrap().parse::<i32>().unwrap();
+                    let rightNumbers = &result.get(rightRange).unwrap().parse::<i32>().unwrap();
+
+                    let finishedCalculation = (operationTracker.calculable.calculable)(Vec::from([*leftNumbers, *rightNumbers]), Option::from(query));
+
+                    result.replace_range((operationTracker.leftStart .. operationTracker.rightEnd + 1), finishedCalculation.as_str());
 
 
-                let finishedCalculation = (operationTracker.calculable.calculable)(Vec::from([*leftNumbers, *rightNumbers]), Option::from(query));
-                result = finishedCalculation;
-
+                }
+                None => { priorityDone = true}
             }
-            None => {println!("None")}
         }
+
     }
 
     return result;

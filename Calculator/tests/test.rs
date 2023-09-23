@@ -19,3 +19,8 @@ fn subtraction() {
 fn division() {
     assert_eq!("1", calc(&String::from("2/2")));
 }
+
+#[test]
+fn chainedCalculationsShouldBeSupported() {
+    assert_eq!("8", calc(&String::from("4+5-1")));
+}

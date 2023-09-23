@@ -1,13 +1,13 @@
 use std::collections::HashMap;
-use crate::{Addition, Operator};
+use crate::{Addition, Operator, OperatorCommands, Subtraction};
 
-pub fn FindNextOperation(query: &String, operatorCommands: HashMap<char, Operator>) -> Option<OperationTracker> {
+pub fn FindNextOperation(mut query: &String, mut operatorCommands: &OperatorCommands) -> Option<OperationTracker> {
+
     let mut operator: Option<Operator> = None;
     let mut leftStartOfOperation: Option<usize> = None;
     let mut leftEndOfOperation: Option<usize> = None;
     let mut rightStartOfOperation: Option<usize> = None;
     let mut rightEndOfOperation: Option<usize> = None;
-
 
     let queryChars = query.as_bytes();
     let queryEnumerator = queryChars.iter().enumerate();
@@ -25,17 +25,16 @@ pub fn FindNextOperation(query: &String, operatorCommands: HashMap<char, Operato
             while i >= 0 {
                 let innerChar: char = char::from(queryChars[i]);
 
-                if !innerChar.is_numeric() {
-                    leftStartOfOperation = Some(i);
-                    i = i - 1;
-                    break;
-                }
-
-
                 if i == 0 {
                     leftStartOfOperation = Some(i);
                     break;
                 }
+
+                if !innerChar.is_numeric() {
+                    leftStartOfOperation = Some(i);
+                    break;
+                }
+
                 i = i - 1;
             }
 
@@ -57,6 +56,7 @@ pub fn FindNextOperation(query: &String, operatorCommands: HashMap<char, Operato
                 }
                 u = u + 1;
             }
+            break;
         }
     }
 
@@ -87,7 +87,7 @@ pub struct OperationTracker {
 
 #[test]
 fn operationIsParsedProperly() {
-    let result = FindNextOperation(&String::from("1+1"), HashMap::from([('+', Addition::new())]));
+    let result = FindNextOperation(&String::from("1+1"), &HashMap::from([('+', Addition::new())]));
     assert_eq!(result.is_none(), false);
 
 
@@ -101,6 +101,48 @@ fn operationIsParsedProperly() {
 
 #[test]
 fn queryHasNoCalculableValues() {
-    let result = FindNextOperation(&String::from("123123"), HashMap::from([('+', Addition::new())]));
+    let result = FindNextOperation(&String::from("123123"), &HashMap::from([('+', Addition::new())]));
     assert_eq!(result.is_none(), true);
+}
+
+#[test]
+fn multipleOperationsInOneExpression() {
+    let result = FindNextOperation(&String::from("4+5-1"), &HashMap::from([('+', Addition::new()), ('-', Subtraction::new())]));
+    assert_eq!(result.is_none(), false);
+
+
+    let operationTracker = result.unwrap();
+
+    assert_eq!(0, operationTracker.leftStart);
+    assert_eq!(0, operationTracker.leftEnd);
+    assert_eq!(2, operationTracker.rightStart);
+    assert_eq!(2, operationTracker.rightEnd);
+}
+
+#[test]
+fn multipleOperationsOrderForCommandsInitDoesNotMatter() {
+    let result = FindNextOperation(&String::from("4+5-1"), &HashMap::from([ ('-', Subtraction::new()), ('+', Addition::new())]));
+    assert_eq!(result.is_none(), false);
+
+
+    let operationTracker = result.unwrap();
+
+    assert_eq!(0, operationTracker.leftStart);
+    assert_eq!(0, operationTracker.leftEnd);
+    assert_eq!(2, operationTracker.rightStart);
+    assert_eq!(2, operationTracker.rightEnd);
+}
+
+#[test]
+fn multipleOperationsOrderForCommandsInitDoesNotMatter2() {
+    let result = FindNextOperation(&String::from("9-1"), &HashMap::from([ ('-', Subtraction::new()), ('+', Addition::new())]));
+    assert_eq!(result.is_none(), false);
+
+
+    let operationTracker = result.unwrap();
+
+    assert_eq!(0, operationTracker.leftStart);
+    assert_eq!(0, operationTracker.leftEnd);
+    assert_eq!(2, operationTracker.rightStart);
+    assert_eq!(2, operationTracker.rightEnd);
 }
