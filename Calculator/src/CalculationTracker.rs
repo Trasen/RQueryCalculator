@@ -31,13 +31,15 @@ pub fn FindNextOperation(mut query: &String, mut operatorCommands: &OperatorComm
             let mut i = index - 1;
             while i >= 0 {
                 let innerChar = queryRef.get(i..i + 1).unwrap();
+                let actualChar = innerChar.chars().next().unwrap();
 
-                if i == 0 {
+                if !actualChar.is_numeric() && actualChar != '.' {
+
                     leftStartOfOperation = Some(i);
                     break;
                 }
 
-                if !innerChar.chars().next().unwrap().is_numeric() {
+                if i == 0 {
                     leftStartOfOperation = Some(i);
                     break;
                 }
@@ -49,8 +51,9 @@ pub fn FindNextOperation(mut query: &String, mut operatorCommands: &OperatorComm
             let mut u = index + 1;
             while u < query.len() {
                 let innerChar = queryRef.get(u..u + 1).unwrap();
+                let actualChar = innerChar.chars().next().unwrap();
 
-                if !innerChar.chars().next().unwrap().is_numeric() {
+                if !actualChar.is_numeric() && actualChar != '.' {
                     rightEndOfOperation = Some(u - 1);
                     u = u + 1;
                     break;
@@ -139,6 +142,20 @@ fn multipleOperationsOrderForCommandsInitDoesNotMatter() {
     assert_eq!(0, operationTracker.leftEnd);
     assert_eq!(2, operationTracker.rightStart);
     assert_eq!(2, operationTracker.rightEnd);
+}
+
+#[test]
+fn decimalsShouldBeHandledProperly() {
+    let result = FindNextOperation(&String::from("0.5+0.5"), &HashMap::from([("-", Subtraction::new()), ("+", Addition::new())]));
+    assert_eq!(result.is_none(), false);
+
+
+    let operationTracker = result.unwrap();
+
+    assert_eq!(0, operationTracker.leftStart);
+    assert_eq!(2, operationTracker.leftEnd);
+    assert_eq!(4, operationTracker.rightStart);
+    assert_eq!(6, operationTracker.rightEnd);
 }
 
 #[test]

@@ -4,6 +4,10 @@ use RQueryCalculator::calc;
 fn addition() {
     assert_eq!("2", calc(&String::from("1+1")));
 }
+#[test]
+fn additionDecimal() {
+    assert_eq!("1", calc(&String::from("0.5+0.5")));
+}
 
 #[test]
 fn multiplication() {
@@ -19,6 +23,7 @@ fn subtraction() {
 fn division() {
     assert_eq!("1", calc(&String::from("2/2")));
 }
+
 
 #[test]
 fn chainedCalculationsShouldBeSupported() {

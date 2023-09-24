@@ -12,34 +12,29 @@ pub fn calc(query: &String) -> String {
 
 
     for (_priorityIndex, operatorCommands) in priorites {
-
         let test = &operatorCommands;
 
         let mut priorityDone = false;
 
         while !priorityDone {
-
             let operation = CalculationTracker::FindNextOperation(&result, test);
 
             match operation {
                 Some(operationTracker) => {
+                    let leftRange = operationTracker.leftStart..operationTracker.leftEnd + 1;
+                    let rightRange = operationTracker.rightStart..operationTracker.rightEnd + 1;
 
-                    let leftRange = operationTracker.leftStart .. operationTracker.leftEnd + 1;
-                    let rightRange = operationTracker.rightStart .. operationTracker.rightEnd + 1;
-
-                    let leftNumbers = &result.get(leftRange).unwrap().parse::<u64>().unwrap();
-                    let rightNumbers = &result.get(rightRange).unwrap().parse::<u64>().unwrap();
+                    let leftNumbers = &result.get(leftRange).unwrap().parse::<LargeDecimal>().unwrap();
+                    let rightNumbers = &result.get(rightRange).unwrap().parse::<LargeDecimal>().unwrap();
 
                     let finishedCalculation = (operationTracker.calculable.calculable)(Vec::from([*leftNumbers, *rightNumbers]), Option::from(&result));
 
-                    result.replace_range((operationTracker.leftStart .. operationTracker.rightEnd + 1), finishedCalculation.as_str());
-
+                    result.replace_range((operationTracker.leftStart..operationTracker.rightEnd + 1), finishedCalculation.as_str());
 
                 }
-                None => { priorityDone = true}
+                None => { priorityDone = true }
             }
         }
-
     }
 
     return result;
@@ -74,7 +69,8 @@ fn BuildCalculationHashTree() -> CalculationHashTree {
 }
 
 
-pub type Calculable = fn(values: Vec<u64>, query: Option<&String>) -> String;
+pub type LargeDecimal = f64;
+pub type Calculable = fn(values: Vec<LargeDecimal>, query: Option<&String>) -> String;
 
 #[derive(Clone, Copy)]
 pub struct Operator {
@@ -134,6 +130,13 @@ impl Division {
             priority: 2,
             char: "/",
             calculable: |values, _query| {
+                let val1 = values.get(0).unwrap();
+                let val2 = values.get(1).unwrap();
+
+                if val1.eq(&0.0) || val2.eq(&0.0)  {
+                    return 0.to_string();
+                }
+
                 return (values.get(0).unwrap() / values.get(1).unwrap()).to_string();
             },
         }
