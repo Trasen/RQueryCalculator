@@ -8,7 +8,8 @@ type OperatorCommands = HashMap<&'static str, Operator>;
 pub fn calc(query: &String) -> String {
     let (priorites, _all_operation_characters) = BuildCalculationHashTree();
 
-    let mut result: String = String::from(query).trim().parse().unwrap();
+    let mut result: String = String::from(str::replace(query.as_str(), " ", "")).trim().parse().unwrap();
+
 
     for (_priorityIndex, operatorCommands) in priorites {
 

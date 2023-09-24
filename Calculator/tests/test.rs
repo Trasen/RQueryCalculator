@@ -29,3 +29,7 @@ fn chainedCalculationsShouldBeSupported() {
 fn multiplePriorityCalculationsShouldBeSupported() {
     assert_eq!("800000", calc(&String::from("4000*200+5-5")));
 }
+#[test]
+fn largeNumbers() {
+    assert_eq!("9999998999990000001", calc(&String::from("9999999*999999999999")));
+}
