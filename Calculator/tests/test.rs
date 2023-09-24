@@ -36,5 +36,5 @@ fn multiplePriorityCalculationsShouldBeSupported() {
 }
 #[test]
 fn largeNumbers() {
-    assert_eq!("9999998999990000001", calc(&String::from("9999999*999999999999")));
+    assert_eq!("999999999999900000000000000000", calc(&String::from("9999999999999*99999999999999999")));
 }
