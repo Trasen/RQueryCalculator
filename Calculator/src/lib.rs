@@ -10,14 +10,77 @@ pub fn calc(query: &String) -> String {
 
     let mut result: String = String::from(str::replace(query.as_str(), " ", "")).trim().parse().unwrap();
 
+    let mut groupsDone = false;
+
+    let mut i = 0;
+
+    let mut openBrace:Option<usize> = None;
+    let mut closedBrace: Option<usize> = None;
+
+    while !groupsDone {
+
+        let queryRef = result.as_str();
+
+        let actualChar = queryRef.get(i..i + 1).unwrap().chars().next().unwrap();
+
+        if actualChar == '(' {
+            openBrace = Some(i);
+            closedBrace = None;
+        }
+
+        if actualChar == ')' {
+            closedBrace = Some(i);
+        }
+
+        if(!openBrace.is_none() && !closedBrace.is_none()) {
+
+            let mut calculable = String::from(result.get(openBrace.unwrap() + 1 .. closedBrace.unwrap()).unwrap());;
+
+            for (_priorityIndex, operatorCommands) in &priorites {
+
+                let mut priorityDone = false;
+
+                while !priorityDone {
+                    let operation = CalculationTracker::FindNextOperation(&calculable, &operatorCommands);
+
+                    match operation {
+                        Some(operationTracker) => {
+                            let leftRange = operationTracker.leftStart..operationTracker.leftEnd + 1;
+                            let rightRange = operationTracker.rightStart..operationTracker.rightEnd + 1;
+
+                            let leftNumbers = &calculable.get(leftRange).unwrap().parse::<LargeDecimal>().unwrap();
+                            let rightNumbers = &calculable.get(rightRange).unwrap().parse::<LargeDecimal>().unwrap();
+
+                            let finishedCalculation = (operationTracker.calculable.calculable)(Vec::from([*leftNumbers, *rightNumbers]), Option::from(&calculable));
+
+                            calculable.replace_range((operationTracker.leftStart ..operationTracker.rightEnd + 1), finishedCalculation.as_str());
+                        }
+                        None => { priorityDone = true }
+                    }
+                }
+            }
+
+            result.replace_range(openBrace.unwrap() ..closedBrace.unwrap() + 1, &calculable);
+            openBrace = None;
+            closedBrace = None;
+            i = 0;
+            continue;
+        }
+
+        i = i + 1;
+
+        if(i >= queryRef.len()) {
+            groupsDone = true;
+        }
+
+    }
 
     for (_priorityIndex, operatorCommands) in priorites {
-        let test = &operatorCommands;
 
         let mut priorityDone = false;
 
         while !priorityDone {
-            let operation = CalculationTracker::FindNextOperation(&result, test);
+            let operation = CalculationTracker::FindNextOperation(&result, &operatorCommands);
 
             match operation {
                 Some(operationTracker) => {

@@ -35,7 +35,7 @@ pub fn FindNextOperation(mut query: &String, mut operatorCommands: &OperatorComm
 
                 if !actualChar.is_numeric() && actualChar != '.' {
 
-                    leftStartOfOperation = Some(i);
+                    leftStartOfOperation = Some(i+1);
                     break;
                 }
 
@@ -184,4 +184,18 @@ fn multiplePrioritiesShouldBeAllowed() {
     assert_eq!(3, operationTracker.leftEnd);
     assert_eq!(5, operationTracker.rightStart);
     assert_eq!(7, operationTracker.rightEnd);
+}
+
+#[test]
+fn specificCase1() {
+    let result = FindNextOperation(&String::from("1+1*10"), &HashMap::from( [(("*"), Multiplication::new())]));
+    assert_eq!(result.is_none(), false);
+
+
+    let operationTracker = result.unwrap();
+
+    assert_eq!(2, operationTracker.leftStart);
+    assert_eq!(2, operationTracker.leftEnd);
+    assert_eq!(4, operationTracker.rightStart);
+    assert_eq!(5, operationTracker.rightEnd);
 }
