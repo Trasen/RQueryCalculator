@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use crate::{Addition, Multiplication, Operator, OperatorCommands, Subtraction};
+use crate::Calculables::{Addition, Multiplication, Operator, Subtraction};
+use crate::CalculationHashTree::OperatorCommands;
 
 pub fn FindNextOperation(mut query: &String, mut operatorCommands: &OperatorCommands) -> Option<OperationTracker> {
     let mut operator: Option<Operator> = None;
