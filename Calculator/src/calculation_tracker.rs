@@ -1,4 +1,5 @@
-use crate::calculables::{Operator};
+use std::collections::HashMap;
+use crate::calculables::{Addition, Multiplication, Operator, Subtraction};
 use crate::calculation_hash_tree::OperatorCommands;
 
 pub fn find_next_operation(query: &String, operator_commands: &OperatorCommands) -> Option<OperationTracker> {

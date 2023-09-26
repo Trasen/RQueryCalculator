@@ -28,10 +28,14 @@ fn multiplication() {
 fn subtraction() {
     assert_eq!("0", calc(String::from("1-1")));
 }
-
 #[test]
 fn division() {
     assert_eq!("1", calc(String::from("2/2")));
+}
+
+#[test]
+fn powerof() {
+    assert_eq!("2342758.075390642", calc(String::from("55^3.66")));
 }
 
 #[test]
@@ -41,7 +45,11 @@ fn chained_calculations_should_be_supported() {
 
 #[test]
 fn multiple_priority_calculations_should_be_supported() {
-    assert_eq!("800000", calc(String::from("4000*200+(5-5)")));
+    assert_eq!("51200000000000000", calc(String::from("4000^4*200+(5-5)")));
+}
+#[test]
+fn multiple_priority_calculations_should_be_supported2() {
+    assert_eq!("0", calc(String::from("(4000^4*200+(5-5))*0")));
 }
 
 #[test]
