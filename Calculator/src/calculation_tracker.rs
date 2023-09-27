@@ -1,8 +1,10 @@
 use std::collections::HashMap;
+
 use crate::calculables::{Addition, Multiplication, Operator, Subtraction};
 use crate::calculation_hash_tree::OperatorCommands;
 
 pub fn find_next_operation(query: &String, operator_commands: &OperatorCommands) -> Option<OperationTracker> {
+
     let mut operator: Option<Operator> = None;
     let mut left_start_of_operation: Option<usize> = None;
     let mut left_end_of_operation: Option<usize> = None;
@@ -10,10 +12,9 @@ pub fn find_next_operation(query: &String, operator_commands: &OperatorCommands)
     let mut right_end_of_operation: Option<usize> = None;
 
     let mut index = 0;
-    let query_ref = query.as_str();
 
     while index <= query.len() {
-        let char_option = query_ref.get(index..index + 1);
+        let char_option = query.get(index..index + 1);
 
         if char_option.is_none() {
             return None;
@@ -21,71 +22,81 @@ pub fn find_next_operation(query: &String, operator_commands: &OperatorCommands)
 
         let char = char_option.unwrap();
 
+        if(index == 0 && char == "-") { // first value is negative, not subtraction
+            index = index + 1;
+            continue;
+        }
 
         if operator_commands.contains_key(char) {
+
             left_end_of_operation = Some(index - 1);
             right_start_of_operation = Some(index + 1);
             operator = Some(operator_commands[&char]);
 
             // backtrack over the query to find all numbers that need to be processed
-            let mut i = index - 1;
-            while i >= 0 {
-                let inner_char = query_ref.get(i..i + 1).unwrap();
-                let actual_char = inner_char.chars().next().unwrap();
-
-                if !actual_char.is_numeric() && actual_char != '.' {
-
-                    left_start_of_operation = Some(i+1);
-                    break;
-                }
-
-                if i == 0 {
-                    left_start_of_operation = Some(i);
-                    break;
-                }
-
-                i = i - 1;
-            }
+            left_start_of_operation = backtrack_to_find_numbers(query, &index);
 
             // move forward in the query to find all numbers that need to be processed
-            let mut u = index + 1;
-            while u < query.len() {
-                let inner_char = query_ref.get(u..u + 1).unwrap();
-                let actual_char = inner_char.chars().next().unwrap();
+            right_end_of_operation = move_forward_to_find_numbers(query, &index);
 
-                if !actual_char.is_numeric() && actual_char != '.' {
-                    right_end_of_operation = Some(u - 1);
-                    u = u + 1;
-                    break;
-                }
-
-
-                if u == query.len() - 1 {
-                    right_end_of_operation = Some(u);
-                    break;
-                }
-                u = u + 1;
-            }
-            break;
+            return Some(OperationTracker {
+                left_start: left_start_of_operation.unwrap(),
+                left_end: left_end_of_operation.unwrap(),
+                right_start: right_start_of_operation.unwrap(),
+                right_end: right_end_of_operation.unwrap(),
+                calculable: operator.unwrap(),
+            });
         }
         index = index + 1;
     }
 
-    for x in Vec::from([left_start_of_operation.is_none(), left_end_of_operation.is_none(), right_start_of_operation.is_none(), right_end_of_operation.is_none(), operator.is_none()]) {
-        if x == true {
-            return None;
+    return None;
+}
+
+fn move_forward_to_find_numbers(query: &String, index: &usize) -> Option<usize> {
+    let mut i = index + 1;
+    while i < query.len() {
+        let current_char = query.get(i..i + 1)?.chars().next().unwrap();
+        let previous_char = query.get(i - 1..i + 1)?.chars().next().unwrap();
+
+        if (!previous_char.is_numeric() && current_char == '-') {
+            i = i + 1;
+            continue;
         }
+
+        if !current_char.is_numeric() && current_char != '.' {
+            return Some(i - 1);
+        }
+
+
+        if i == query.len() - 1 {
+            return Some(i);
+        }
+        i = i + 1;
     }
+    return None;
+}
 
-    let result = Some(OperationTracker {
-        left_start: left_start_of_operation.unwrap(),
-        left_end: left_end_of_operation.unwrap(),
-        right_start: right_start_of_operation.unwrap(),
-        right_end: right_end_of_operation.unwrap(),
-        calculable: operator.unwrap(),
-    });
+fn backtrack_to_find_numbers(query: &String, index: &usize) -> Option<usize> {
+    let mut i = index - 1;
+    while i >= 0 {
+        let current_char = query.get(i..i + 1)?.chars().next().unwrap();
 
-    return result;
+        if i == 0 {
+            return Some(i);
+        }
+
+        if !current_char.is_numeric() && current_char != '.' {
+            return Some(i + 1);
+        }
+
+        if i == 0 {
+            return Some(i);
+        }
+
+        i = i - 1;
+    }
+    return None;
 }
 
 pub struct OperationTracker {
@@ -184,6 +195,20 @@ fn multiplePrioritiesShouldBeAllowed() {
     assert_eq!(3, operation_tracker.left_end);
     assert_eq!(5, operation_tracker.right_start);
     assert_eq!(7, operation_tracker.right_end);
+}
+
+#[test]
+fn negative_values_should_be_dealt_with_properly() {
+    let result = find_next_operation(&String::from("-5*-5"), &HashMap::from([("-", Subtraction::new()), ("+", Addition::new()), (("*"), Multiplication::new())]));
+    assert_eq!(result.is_none(), false);
+
+
+    let operation_tracker = result.unwrap();
+
+    assert_eq!(0, operation_tracker.left_start);
+    assert_eq!(1, operation_tracker.left_end);
+    assert_eq!(3, operation_tracker.right_start);
+    assert_eq!(4, operation_tracker.right_end);
 }
 
 #[test]

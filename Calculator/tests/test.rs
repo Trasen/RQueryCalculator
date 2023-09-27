@@ -6,6 +6,11 @@ fn addition() {
 }
 
 #[test]
+fn no_calculations_should_return_same_numbers() {
+    assert_eq!("11", calc(String::from("11")));
+}
+
+#[test]
 fn grouped_calculations_should_be_supported() {
     assert_eq!("5", calc(String::from("(1+1)+(2+1)")));
 }
@@ -22,6 +27,15 @@ fn addition_decimal() {
 #[test]
 fn multiplication() {
     assert_eq!("25", calc(String::from("5*5")));
+}
+
+#[test]
+fn negative_values_should_be_handled_properly() {
+    assert_eq!("25", calc(String::from("-5*-5")));
+}
+#[test]
+fn negative_values_should_be_handled_properly2() {
+    assert_eq!("61.5", calc(String::from("-5*-5*-5/-2+-1")));
 }
 
 #[test]
@@ -45,7 +59,7 @@ fn chained_calculations_should_be_supported() {
 
 #[test]
 fn multiple_priority_calculations_should_be_supported() {
-    assert_eq!("51200000000000000", calc(String::from("4000^4*200+(5-5)")));
+    assert_eq!("51199999999999940", calc(String::from("4000^4*200+(-55-5)")));
 }
 #[test]
 fn multiple_priority_calculations_should_be_supported2() {
