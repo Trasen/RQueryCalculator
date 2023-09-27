@@ -3,5 +3,12 @@
 version = 3
 
 [[package]]
-name = "Calculator"
+name = "CLI"
+version = "0.1.0"
+dependencies = [
+ "RQueryCalculator",
+]
+
+[[package]]
+name = "RQueryCalculator"
 version = "0.1.0"

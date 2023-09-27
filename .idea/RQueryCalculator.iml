@@ -5,10 +5,11 @@
       <sourceFolder url="file://$MODULE_DIR$/Calculator/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Calculator/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/Test/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/CLI/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/Calculator/target" />
       <excludeFolder url="file://$MODULE_DIR$/Test/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/CLI/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

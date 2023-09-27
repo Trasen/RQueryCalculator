@@ -48,6 +48,11 @@ fn division() {
 }
 
 #[test]
+fn division2() {
+    assert_eq!("2700000", calc(String::from("9000*(600/2)")));
+}
+
+#[test]
 fn powerof() {
     assert_eq!("2342758.075390642", calc(String::from("55^3.66")));
 }
