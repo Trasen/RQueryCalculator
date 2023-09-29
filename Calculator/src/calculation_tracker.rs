@@ -14,13 +14,12 @@ pub fn find_next_operation(query: &String, operator_commands: &OperatorCommands)
     let mut index = 0;
 
     while index <= query.len() {
-        let char_option = query.get(index..index + 1);
+        let char_option = match query.get(index..index + 1) {
+            None => {""}
+            Some(char) => {char}
+        };
 
-        if char_option.is_none() {
-            return None;
-        }
-
-        let char = char_option.unwrap();
+        let char = char_option;
 
         if(index == 0 && char == "-") { // first value is negative, not subtraction
             index = index + 1;

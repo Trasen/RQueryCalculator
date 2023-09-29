@@ -4,7 +4,7 @@ use crate::calculation_resolver;
 pub fn calculate(query: String, calculation_hash_tree: CalculationHashTree) -> String {
     let (priorities, _all_operation_characters) = calculation_hash_tree;
 
-    let mut result: String = String::from(str::replace(query.as_str(), " ", "")).trim().parse().unwrap();
+    let mut result: String = String::from(query);
 
     let mut groups_done = false;
 
@@ -14,14 +14,18 @@ pub fn calculate(query: String, calculation_hash_tree: CalculationHashTree) -> S
     let mut closed_brace: Option<usize> = None;
 
     while !groups_done {
-        let current_char = result.get(i..i + 1).unwrap().chars().next().unwrap();
+        let current_char_option = result.get(i..i + 1);
+        let current_char: &str = match current_char_option {
+            None => {""}
+            Some(char) => {char}
+        };
 
-        if current_char == '(' {
+        if current_char == "(" {
             open_brace = Some(i);
             closed_brace = None;
         }
 
-        if current_char == ')' {
+        if current_char == ")" {
             closed_brace = Some(i);
         }
 

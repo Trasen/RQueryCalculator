@@ -75,3 +75,14 @@ fn multiple_priority_calculations_should_be_supported2() {
 fn large_numbers() {
     assert_eq!("999999999999900000000000000000", calc(String::from("9999999999999*99999999999999999")));
 }
+
+#[test]
+fn regular_text_should_be_allowed() {
+    assert_eq!("HejHå 0 HejHå", calc(String::from("HejHå (4000^4*200+(5-5))*0 HejHå")));
+}
+
+
+#[test]
+fn regular_text_should_be_allowed2() {
+    assert_eq!("Once upon a time there were 16 dwarfs digging 256 holes", calc(String::from("Once upon a time there were 2*8 dwarfs digging 2^8 holes")));
+}
