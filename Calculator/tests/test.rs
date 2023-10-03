@@ -98,3 +98,13 @@ fn regular_text_should_be_allowed() {
 fn regular_text_should_be_allowed2() {
     assert_eq!("Once upon a time there were 16 dwarfs digging 256 holes", calc(String::from("Once upon a time there were 2*8 dwarfs digging 2^8 holes")));
 }
+
+#[test]
+fn regular_text_should_be_allowed3() {
+    assert_eq!("HejHå -600 HejHå", calc(String::from("HejHå 400*0-600 HejHå")));
+}
+
+#[test]
+fn negative_values_should_be_allowed_as_a_result() {
+    assert_eq!("-600", calc(String::from("400*0-600")));
+}
