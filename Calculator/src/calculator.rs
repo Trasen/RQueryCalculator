@@ -1,10 +1,10 @@
 use crate::calculation_hash_tree::CalculationHashTree;
 use crate::calculation_resolver;
 
-pub fn calculate(query: String, calculation_hash_tree: CalculationHashTree) -> String {
+pub fn calculate<'a>(query: Vec<char>, calculation_hash_tree: CalculationHashTree) -> Vec<char> {
     let (priorities, _all_operation_characters) = calculation_hash_tree;
 
-    let mut result: String = String::from(query);
+    let mut result: Vec<char> = query.to_owned();
 
     let mut groups_done = false;
 
@@ -14,25 +14,23 @@ pub fn calculate(query: String, calculation_hash_tree: CalculationHashTree) -> S
     let mut closed_brace: Option<usize> = None;
 
     while !groups_done {
-        let current_char_option = result.get(i..i + 1);
-        let current_char: &str = match current_char_option {
-            None => {""}
-            Some(char) => {char}
-        };
+        let current_char = result[i];
 
-        if current_char == "(" {
-            open_brace = Some(i);
+        if current_char == '(' {
+            open_brace = Some(i+1);
             closed_brace = None;
         }
 
-        if current_char == ")" {
+        if current_char == ')' {
             closed_brace = Some(i);
         }
 
         if !open_brace.is_none() && !closed_brace.is_none() {
             let calculable = calculation_resolver::resolve_calculation_from_to(&priorities, &result, open_brace.unwrap(), closed_brace.unwrap());
 
-            result.replace_range(open_brace.unwrap()..closed_brace.unwrap() + 1, &calculable);
+            let calc = calculable.to_owned();
+
+            result.splice(open_brace.unwrap() - 1..closed_brace.unwrap() + 1, calc);
             open_brace = None;
             closed_brace = None;
             i = 0;
@@ -46,7 +44,7 @@ pub fn calculate(query: String, calculation_hash_tree: CalculationHashTree) -> S
         }
     }
 
-    result = calculation_resolver::resolve_calculation(&priorities, &result);
+    result = calculation_resolver::resolve_calculation(&priorities, result);
 
     return result;
 }
