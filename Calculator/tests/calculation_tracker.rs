@@ -1,6 +1,5 @@
 use RQueryCalculator::{calculation_tracker};
-use std::collections::HashMap;
-use RQueryCalculator::calculables::{Addition, Multiplication, Subtraction};
+use RQueryCalculator::calculables::{Addition, Multiplication, SquareRoot, Subtraction};
 use RQueryCalculator::calculation_hash_tree::{OperatorCommands};
 
 #[test]
@@ -119,4 +118,15 @@ fn specificCase1() {
     assert_eq!(2, operation_tracker.left_end);
     assert_eq!(4, operation_tracker.right_start);
     assert_eq!(5, operation_tracker.right_end);
+}
+
+#[test]
+fn functions_should_work_as_intended() {
+    let result = calculation_tracker::find_next_operation(&String::from("√4").chars().collect(), &OperatorCommands::from( [(&('√'), SquareRoot::new())]));
+    assert_eq!(result.is_none(), false);
+
+    let operation_tracker = result.unwrap();
+
+    assert_eq!(1, operation_tracker.right_start);
+    assert_eq!(1, operation_tracker.right_end);
 }

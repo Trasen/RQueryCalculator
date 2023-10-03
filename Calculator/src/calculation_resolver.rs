@@ -1,4 +1,4 @@
-use crate::calculables::LargeDecimal;
+use crate::calculables::{LargeDecimal, OperatorType};
 use crate::calculation_hash_tree::OperatorPriorities;
 use crate::calculation_tracker;
 
@@ -20,18 +20,33 @@ pub fn resolve_calculation<'a>(priorites: &OperatorPriorities, calculable_value:
 
             match operation {
                 Some(operation_tracker) => {
-                    let left_range = operation_tracker.left_start..operation_tracker.left_end + 1;
-                    let right_range = operation_tracker.right_start..operation_tracker.right_end + 1;
+                    match operation_tracker.calculable.operator_type {
+                        OperatorType::Operator => {
+                            let left_range = operation_tracker.left_start..operation_tracker.left_end + 1;
+                            let right_range = operation_tracker.right_start..operation_tracker.right_end + 1;
 
-                    let left_numbers_string = &calculable.get(left_range).unwrap().into_iter().collect::<String>();
-                    let right_numbers_string = &calculable.get(right_range).unwrap().into_iter().collect::<String>();
+                            let left_numbers_string = &calculable.get(left_range).unwrap().into_iter().collect::<String>();
+                            let right_numbers_string = &calculable.get(right_range).unwrap().into_iter().collect::<String>();
 
-                    let left_numbers = &left_numbers_string.parse::<LargeDecimal>().unwrap();
-                    let right_numbers = &right_numbers_string.parse::<LargeDecimal>().unwrap();
+                            let left_numbers = &left_numbers_string.parse::<LargeDecimal>().unwrap();
+                            let right_numbers = &right_numbers_string.parse::<LargeDecimal>().unwrap();
 
-                    let finished_calculation = (operation_tracker.calculable.calculable)(Vec::from([*left_numbers, *right_numbers]));
+                            let finished_calculation = (operation_tracker.calculable.calculable)(Vec::from([*left_numbers, *right_numbers]));
 
-                    Vec::splice(&mut calculable, operation_tracker.left_start..operation_tracker.right_end + 1, finished_calculation);
+                            Vec::splice(&mut calculable, operation_tracker.left_start..operation_tracker.right_end + 1, finished_calculation);
+                        }
+                        OperatorType::Function => {
+
+                            let right_range = operation_tracker.right_start..operation_tracker.right_end + 1;
+                            let right_numbers_string = &calculable.get(right_range).unwrap().into_iter().collect::<String>();
+                            let right_numbers = &right_numbers_string.parse::<LargeDecimal>().unwrap();
+                            let finished_calculation = (operation_tracker.calculable.calculable)(Vec::from([*right_numbers]));
+
+                            Vec::splice(&mut calculable, operation_tracker.right_start - 1 ..operation_tracker.right_end + 1, finished_calculation);
+                        }
+                    }
+
+
                 }
                 None => { priority_done = true }
             }

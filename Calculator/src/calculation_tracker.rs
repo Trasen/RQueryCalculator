@@ -1,13 +1,10 @@
-use crate::calculables::Operator;
+use crate::calculables::{Operator, OperatorType};
 use crate::calculation_hash_tree::OperatorCommands;
 
 pub fn find_next_operation(query: &Vec<char>, operator_commands: &OperatorCommands) -> Option<OperationTracker> {
 
-    let mut operator: Option<Operator> = None;
-    let mut left_start_of_operation: Option<usize> = None;
-    let mut left_end_of_operation: Option<usize> = None;
-    let mut right_start_of_operation: Option<usize> = None;
-    let mut right_end_of_operation: Option<usize> = None;
+    let mut operator: Operator;
+
 
     let mut index = 0;
 
@@ -21,23 +18,47 @@ pub fn find_next_operation(query: &Vec<char>, operator_commands: &OperatorComman
 
         if operator_commands.contains_key(&char) {
 
-            left_end_of_operation = Some(index - 1);
-            right_start_of_operation = Some(index + 1);
-            operator = Some(operator_commands[&char]);
+            operator = operator_commands[&char];
 
-            // backtrack over the query to find all numbers that need to be processed
-            left_start_of_operation = backtrack_to_find_numbers(&query, &index);
+            match operator.operator_type {
+                OperatorType::Operator => {
+                    let mut left_start_of_operation: Option<usize> = None;
+                    let mut left_end_of_operation: Option<usize> = Some(index - 1);
+                    let mut right_start_of_operation: Option<usize> = Some(index + 1);
+                    let mut right_end_of_operation: Option<usize> = None;
 
-            // move forward in the query to find all numbers that need to be processed
-            right_end_of_operation = move_forward_to_find_numbers(&query, &index);
+                    // backtrack over the query to find all numbers that need to be processed
+                    left_start_of_operation = backtrack_to_find_numbers(&query, &index);
 
-            return Some(OperationTracker {
-                left_start: left_start_of_operation.unwrap(),
-                left_end: left_end_of_operation.unwrap(),
-                right_start: right_start_of_operation.unwrap(),
-                right_end: right_end_of_operation.unwrap(),
-                calculable: operator.unwrap(),
-            });
+                    // move forward in the query to find all numbers that need to be processed
+                    right_end_of_operation = move_forward_to_find_numbers(&query, &index);
+
+                    return Some(OperationTracker {
+                        left_start: left_start_of_operation.unwrap(),
+                        left_end: left_end_of_operation.unwrap(),
+                        right_start: right_start_of_operation.unwrap(),
+                        right_end: right_end_of_operation.unwrap(),
+                        calculable: operator,
+                    });
+                }
+                OperatorType::Function => {
+                    let mut right_start_of_operation: Option<usize> = Some(index + 1);
+                    let mut right_end_of_operation: Option<usize> = None;
+
+                    // move forward in the query to find all numbers that need to be processed
+                    right_end_of_operation = move_forward_to_find_numbers(&query, &index);
+
+                    return Some(OperationTracker {
+                        left_start: 0,
+                        left_end: 0,
+                        right_start: right_start_of_operation.unwrap(),
+                        right_end: right_end_of_operation.unwrap(),
+                        calculable: operator,
+                    });
+                }
+            }
+
+
         }
         index = index + 1;
     }

@@ -1,19 +1,34 @@
 pub type Calculable = fn(values: Vec<LargeDecimal>) -> Vec<char>;
 
 pub struct Addition {}
-
 pub struct Subtraction {}
-
 pub struct Multiplication {}
-
 pub struct Division {}
 pub struct PowerOf {}
+
+pub struct SquareRoot {}
+
+pub enum OperatorType {
+    Operator,
+    Function,
+}
 
 #[derive(Clone, Copy)]
 pub struct Operator {
     pub(crate) priority: i32,
     pub(crate) char: &'static char,
+    pub(crate) operator_type: OperatorType,
     pub calculable: Calculable,
+}
+
+impl Clone for OperatorType {
+    fn clone(&self) -> Self {
+        return *self;
+    }
+}
+
+impl Copy for OperatorType {
+
 }
 
 pub type LargeDecimal = f64;
@@ -34,6 +49,7 @@ impl Addition {
         Operator {
             priority: 4,
             char: &'+',
+            operator_type: OperatorType::Operator,
             calculable: |values| {
                 return (values.get(0).unwrap() + values.get(1).unwrap()).to_string().chars().collect();
             },
@@ -46,6 +62,7 @@ impl Subtraction {
         Operator {
             priority: 4,
             char: &'-',
+            operator_type: OperatorType::Operator,
             calculable: |values| {
                 return (values.get(0).unwrap() - values.get(1).unwrap()).to_string().chars().collect();
             },
@@ -58,6 +75,7 @@ impl Multiplication {
         Operator {
             priority: 2,
             char: &'*',
+            operator_type: OperatorType::Operator,
             calculable: |values| {
                 return (values.get(0).unwrap() * values.get(1).unwrap()).to_string().chars().collect();
             },
@@ -70,6 +88,7 @@ impl Division {
         Operator {
             priority: 2,
             char: &'/',
+            operator_type: OperatorType::Operator,
             calculable: |values| {
                 let val1 = values.get(0).unwrap();
                 let val2 = values.get(1).unwrap();
@@ -89,11 +108,26 @@ impl PowerOf {
         Operator {
             priority: 1,
             char: &'^',
+            operator_type: OperatorType::Operator,
             calculable: |values| {
                 let val1 = values.get(0).unwrap();
                 let val2 = values.get(1).unwrap();
 
                 return (val1.powf(val2.to_f64())).to_string().chars().collect()
+            },
+        }
+    }
+}
+
+impl SquareRoot {
+    pub fn new() -> Operator {
+        Operator {
+            priority: 1,
+            char: &'√',
+            operator_type: OperatorType::Function,
+            calculable: |values| {
+                let val1 = values.get(0).unwrap();
+                return (val1.sqrt()).to_string().chars().collect()
             },
         }
     }

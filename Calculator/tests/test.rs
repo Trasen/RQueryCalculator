@@ -55,6 +55,16 @@ fn division2() {
 }
 
 #[test]
+fn square_root() {
+    assert_eq!("2", calc(String::from("√4")));
+}
+
+#[test]
+fn square_root2() {
+    assert_eq!("256", calc(String::from("√4^8")));
+}
+
+#[test]
 fn powerof() {
     assert_eq!("2342758.075390642", calc(String::from("55^3.66")));
 }

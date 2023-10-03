@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 
-use crate::calculables::{Addition, Division, Multiplication, Operator, PowerOf, Subtraction};
+use crate::calculables::{Addition, Division, Multiplication, Operator, PowerOf, SquareRoot, Subtraction};
 
 pub type CalculationHashTree = (BTreeMap<i32, OperatorCommands>, OperatorCommands);
 pub type OperatorCommands = HashMap<&'static char, Operator>;
@@ -10,7 +10,7 @@ pub fn build_calculation_hash_tree() -> CalculationHashTree {
     let mut priorites: OperatorPriorities = BTreeMap::new();
     let mut operator_characters = HashMap::new();
 
-    let commands: Vec<Operator> = Vec::from([Addition::new(), Subtraction::new(), Multiplication::new(), Division::new(), PowerOf::new()]);
+    let commands: Vec<Operator> = Vec::from([Addition::new(), Subtraction::new(), Multiplication::new(), Division::new(), PowerOf::new(), SquareRoot::new()]);
 
     for x in commands {
         let prio: i32 = x.priority;
