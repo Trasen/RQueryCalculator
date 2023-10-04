@@ -4,6 +4,10 @@ use crate::calculation_resolver;
 pub fn calculate<'a>(query: Vec<char>, calculation_hash_tree: CalculationHashTree) -> Vec<char> {
     let (priorities, _all_operation_characters) = calculation_hash_tree;
 
+    if query.len() == 0 {
+        return query;
+    }
+
     let mut result: Vec<char> = query.to_owned();
 
     let mut groups_done = false;
