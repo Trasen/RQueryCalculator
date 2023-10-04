@@ -5,5 +5,10 @@ pub mod calculation_hash_tree;
 mod calculator;
 
 pub fn calc(query: String) -> String {
+
+    if query.len() == 0 {
+        return String::from('\n');
+    }
+
     return String::from_iter(calculator::calculate(query.chars().collect::<Vec<char>>(), calculation_hash_tree::build_calculation_hash_tree()));
 }

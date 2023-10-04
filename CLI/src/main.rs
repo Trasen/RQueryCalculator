@@ -1,23 +1,26 @@
 use std::io;
 use std::io::{BufRead, Write};
+use RQueryCalculator::calc;
 
 fn main() {
 
-    let calc = std::env::args().nth(1);
+    let calculatablevalue = std::env::args().nth(1);
     let mut finished = String::from("");
-    match calc {
+    match calculatablevalue {
         None => {
-            io::stdin().lock().lines().fold("".to_string(), |acc, line| (*{
+            io::stdin().lock().lines().fold((), |acc, line| ({
 
                 match line {
                     Ok(li) => {
-                        finished.insert_str(finished.len(), &RQueryCalculator::calc(li));
+                        let mut res = calc(li);
+                        res.insert_str(res.len(), "\n");
+                        finished.insert_str(finished.len(), &res);
                     }
                     Err(_) => {
-
+                        dbg!("Error");
                     }
                 }
-            }).parse().unwrap())
+            }));
         }
         Some(some) => {
             let result = RQueryCalculator::calc(String::from(some));
