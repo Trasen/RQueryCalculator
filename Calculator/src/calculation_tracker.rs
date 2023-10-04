@@ -3,22 +3,33 @@ use crate::calculation_hash_tree::OperatorCommands;
 
 pub fn find_next_operation(query: &Vec<char>, operator_commands: &OperatorCommands) -> Option<OperationTracker> {
 
-    let mut operator: Operator;
-
-
     let mut index = 0;
-
+    let mut previous_char: Option<char> = None;
     while index < query.len() {
-        let char = query.get(index).unwrap();
+        let current_char = query.get(index).unwrap();
 
-        if index == 0 && char == &'-' { // first value is negative, not subtraction
-            index = index + 1;
-            continue;
+
+        // Deal with Negative Number is not an Operator (again)
+        match previous_char {
+            None => {
+                if current_char == &'-' {
+                    index = index + 1;
+                    continue;
+                }
+            }
+            Some(some) => {
+                if current_char == &'-' && !some.is_numeric() {
+                    index = index + 1;
+                    continue;
+                }
+            }
         }
 
-        if operator_commands.contains_key(&char) {
 
-            operator = operator_commands[&char];
+        previous_char = Some(*current_char);
+
+        if operator_commands.contains_key(&current_char) {
+            let operator = operator_commands[&current_char];
 
             match operator.operator_type {
                 OperatorType::Operator => {
@@ -32,6 +43,14 @@ pub fn find_next_operation(query: &Vec<char>, operator_commands: &OperatorComman
 
                     // move forward in the query to find all numbers that need to be processed
                     right_end_of_operation = move_forward_to_find_numbers(&query, &index);
+
+                    if left_start_of_operation == None {
+                        return None;
+                    }
+
+                    if right_end_of_operation == None {
+                        return None;
+                    }
 
                     return Some(OperationTracker {
                         left_start: left_start_of_operation.unwrap(),
@@ -47,6 +66,10 @@ pub fn find_next_operation(query: &Vec<char>, operator_commands: &OperatorComman
 
                     // move forward in the query to find all numbers that need to be processed
                     right_end_of_operation = move_forward_to_find_numbers(&query, &index);
+
+                    if right_end_of_operation == None {
+                        return None;
+                    }
 
                     return Some(OperationTracker {
                         left_start: 0,

@@ -130,3 +130,9 @@ fn functions_should_work_as_intended() {
     assert_eq!(1, operation_tracker.right_start);
     assert_eq!(1, operation_tracker.right_end);
 }
+
+#[test]
+fn special_case() {
+    let result = calculation_tracker::find_next_operation(&String::from("asdasd -600 asdasd" ).chars().collect(), &OperatorCommands::from( [(&('√'), SquareRoot::new())]));
+    assert_eq!(result.is_none(), true);
+}

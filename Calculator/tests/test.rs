@@ -98,3 +98,41 @@ fn regular_text_should_be_allowed() {
 fn regular_text_should_be_allowed2() {
     assert_eq!("Once upon a time there were 16 dwarfs digging 256 holes", calc(String::from("Once upon a time there were 2*8 dwarfs digging 2^8 holes")));
 }
+
+#[test]
+fn regular_text_should_be_allowed3() {
+    assert_eq!("HejHå -600 HejHå", calc(String::from("HejHå 400*0-600 HejHå")));
+}
+
+#[test]
+fn regular_text_should_be_allowed_multi_line() {
+    assert_eq!(
+        "
+            Lorem ipsum dolor sit amet 600, neglegentur delicatissimi an mea, ad ius tamquam noluisse. Ad qui quas minim, per partem percipit philosophia id, timeam debitis consectetuer no eam. Pri modus vivendo ex. In eripuit accusam forensibus sea, te putant accusamus nec. Ne suavitate ullamcorper nam.
+
+            Ne timeam expetenda per, in per mucius persius voluptua. Et appetere recteque vel. Qui an sonet accusamus, vel commune ancillae in. Ei ponderum legendos tractatos vel.
+
+            Inani viris elaboraret et ius, summo timeam numquam in vel. Id vel lorem simul blandit, ad eos adhuc mediocrem moderatius. Nam ex adhuc vitae, an sea nulla sonet. At invenire instructior quo, cibo euismod accusam ne usu.
+
+            Mei sonet explicari at, est in cibo nihil. Denique invenire vituperata no vis. Novum nemore deterruisset ius ea. Cu est eros scribentur. Cu eos debet equidem, ut duo movet voluptatum, cum an regione interesset.
+
+            Ius clita solet nullam ex, principes dissentias cu per. Electram partiendo nec ne, ut detraxit sadipscing suscipiantur per. Eu ipsum dolore ancillae qui. Eam errem dictas te, at eum equidem delicata. Eu equidem efficiantur vix, et eam illum noluisse. Justo meliore sapientem at cum, pri noster luptatum ne, vero dolorum evertitur ius ex.
+            ",
+        calc(String::from(
+            "
+            Lorem ipsum dolor sit amet 300*2, neglegentur delicatissimi an mea, ad ius tamquam noluisse. Ad qui quas minim, per partem percipit philosophia id, timeam debitis consectetuer no eam. Pri modus vivendo ex. In eripuit accusam forensibus sea, te putant accusamus nec. Ne suavitate ullamcorper nam.
+
+            Ne timeam expetenda per, in per mucius persius voluptua. Et appetere recteque vel. Qui an sonet accusamus, vel commune ancillae in. Ei ponderum legendos tractatos vel.
+
+            Inani viris elaboraret et ius, summo timeam numquam in vel. Id vel lorem simul blandit, ad eos adhuc mediocrem moderatius. Nam ex adhuc vitae, an sea nulla sonet. At invenire instructior quo, cibo euismod accusam ne usu.
+
+            Mei sonet explicari at, est in cibo nihil. Denique invenire vituperata no vis. Novum nemore deterruisset ius ea. Cu est eros scribentur. Cu eos debet equidem, ut duo movet voluptatum, cum an regione interesset.
+
+            Ius clita solet nullam ex, principes dissentias cu per. Electram partiendo nec ne, ut detraxit sadipscing suscipiantur per. Eu ipsum dolore ancillae qui. Eam errem dictas te, at eum equidem delicata. Eu equidem efficiantur vix, et eam illum noluisse. Justo meliore sapientem at cum, pri noster luptatum ne, vero dolorum evertitur ius ex.
+            ")));
+}
+
+#[test]
+fn negative_values_should_be_allowed_as_a_result() {
+    assert_eq!("-600", calc(String::from("400*0-600")));
+}
